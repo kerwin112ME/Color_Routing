@@ -782,40 +782,47 @@ void routing::classifyline(vector<line> &outline){
 	
 }
 void routing::ColorPat(){
-	int color1=0,color2=0;//total length ofcolor1 and color2 
+	double color1=0,color2=0;//total length ofcolor1 and color2 
 	bool isline=false;//if there is line ahead of current line (avoid conflict)
 	int colorless=-1,colormore=-2;//default draw color1 first(-1)
 	int xl=map[0][0].size();//the length of m[0] m[2] 
 	int yl=map[0].size();////the length of m[1] m[3]
-	for(int l=0;l<3;l+=2)//for layer1 and 3
+	double cm[4]={0,0,0,0},cm2[4]={0,0,0,0};
+	for(int l=0;l<3;l+=2){//for layer1 and 3
+		color1=0;
+		color2=0;
 		for(int i=0;i<xl;i++){
 			if(m[l][i].empty())
 				isline=false;
 			else if(!m[l][i].empty()){
 				if(color1>color2){
-							colorless=-2;
-							colormore=-1;	
-						}
-						else{
-							colorless=-1;
-							colormore=-2;	
-						}
+					colorless=-2;
+					colormore=-1;	
+				}
+				else{
+					colorless=-1;
+					colormore=-2;	
+				}
 				if(!isline){//«e­±¨S¦³½u
 					for(int v=0;v<m[l][i].size();v++){
 						node x1=m[l][i][v].getN1();
 						node x2=m[l][i][v].getN2();
-						if(colorless==-1)
-							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø 
-						else
+						if(colorless==-1){
+							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+							cm[l]+=m[l][i][v].getLENGTH();
+						} 
+						else{
 							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
-							if(x1.getx()<x2.getx()){
-				 			for(int j=x1.getx();j<x2.getx()+1;j++)
+							cm2[l]+=m[l][i][v].getLENGTH();
+						}
+						if(x1.getx()<x2.getx()){
+							for(int j=x1.getx();j<x2.getx()+1;j++)
 								map[l][j][x1.gety()].setColor(colorless);
-							}
-							else{
-								for(int j=x2.getx();j<x1.getx()+1;j++)
+						}
+						else if(x1.getx()>x2.getx()){
+							for(int j=x2.getx();j<x1.getx()+1;j++)
 								map[l][j][x1.gety()].setColor(colorless);		
-							}
+						}
 					}//end for
 				}//end if	!isline
 				else if(isline){
@@ -824,67 +831,82 @@ void routing::ColorPat(){
 						node x1=m[l][i][v].getN1();
 						node x2=m[l][i][v].getN2();
 						if(lastcolor!=colorless){
-							if(colorless==-1)
-							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø 
-						else
-							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø	
-				 			if(x1.getx()<x2.getx()){
-				 			for(int j=x1.getx();j<x2.getx()+1;j++)
-								map[l][j][x1.gety()].setColor(colorless);
-							}
+							if(colorless==-1){
+								color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm[l]+=m[l][i][v].getLENGTH();
+							} 
 							else{
+								color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm2[l]+=m[l][i][v].getLENGTH();
+							}
+							if(x1.getx()<x2.getx()){
+								for(int j=x1.getx();j<x2.getx()+1;j++)
+									map[l][j][x1.gety()].setColor(colorless);
+							}
+							else if(x1.getx()>x2.getx()){
 								for(int j=x2.getx();j<x1.getx()+1;j++)
-								map[l][j][x1.gety()].setColor(colorless);		
+									map[l][j][x1.gety()].setColor(colorless);		
 							}		
 						}
 						else{	
-						if(colormore==-1)
-							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø 
-						else
-							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø	
-				 			if(x1.getx()<x2.getx()){
-				 			for(int j=x1.getx();j<x2.getx()+1;j++)
-								map[l][j][x1.gety()].setColor(colormore);
-							}
+							if(colormore==-1){
+								color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm[l]+=m[l][i][v].getLENGTH();
+							} 
 							else{
+								color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm2[l]+=m[l][i][v].getLENGTH();
+							}
+							if(x1.getx()<x2.getx()){
+								for(int j=x1.getx();j<x2.getx()+1;j++)
+									map[l][j][x1.gety()].setColor(colormore);
+							}
+							else if(x1.getx()>x2.getx()){
 								for(int j=x2.getx();j<x1.getx()+1;j++)
-								map[l][j][x1.gety()].setColor(colormore);		
+									map[l][j][x1.gety()].setColor(colormore);		
 							}
 						}
+					}
 				}
-			}
-			isline=true;	
+				isline=true;	
 			}//end else if  !empty
 		} 
-	for(int l=1;l<4;l+=2)
+	}
+	for(int l=1;l<4;l+=2){
+		color1=0;
+		color2=0;
 		for(int i=0;i<yl;i++){
 			if(m[l][i].empty())
 				isline=false;
 			else if(!m[l][i].empty()){
 				if(color1>color2){
-							colorless=-2;
-							colormore=-1;	
-						}
-						else{
-							colorless=-1;
-							colormore=-2;	
-						}
+					colorless=-2;
+					colormore=-1;	
+				}
+				else{
+					colorless=-1;
+					colormore=-2;	
+				}
 				if(!isline){//«e­±¨S¦³½u
 					for(int v=0;v<m[l][i].size();v++){
 						node x1=m[l][i][v].getN1();
 						node x2=m[l][i][v].getN2();
-						if(colorless==-1)
-							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø 
-						else
-							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø	
-				 			if(x1.gety()<x2.gety()){
-				 			for(int j=x1.gety();j<x2.gety()+1;j++)
+						if(colorless==-1){
+							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+							cm[l]+=m[l][i][v].getLENGTH();
+						} 
+						else{
+							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+							cm2[l]+=m[l][i][v].getLENGTH();
+						}	
+						if(x1.gety()<x2.gety()){
+							for(int j=x1.gety();j<x2.gety()+1;j++)
 								map[l][x1.getx()][j].setColor(colorless);
-							}
-							else{
-								for(int j=x2.gety();j<x1.gety()+1;j++)
+						}
+						else if(x1.gety()>x2.gety()){
+							for(int j=x2.gety();j<x1.gety()+1;j++)
 								map[l][x1.getx()][j].setColor(colorless);		
-							}
+						}
 					}//end for
 				}//end if	!isline
 				else if(isline){
@@ -893,41 +915,58 @@ void routing::ColorPat(){
 						node x1=m[l][i][v].getN1();
 						node x2=m[l][i][v].getN2();
 						if(lastcolor!=colorless){
-							if(colorless==-1)
-							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø 
-						else
-							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø	
-				 			if(x1.gety()<x2.gety()){
-				 			for(int j=x1.gety();j<x2.gety()+1;j++)
-								map[l][x1.getx()][j].setColor(colorless);
-							}
+							if(colorless==-1){
+								color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm[l]+=m[l][i][v].getLENGTH();
+							} 
 							else{
+								color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm2[l]+=m[l][i][v].getLENGTH();
+							}	
+							if(x1.gety()<x2.gety()){
+								for(int j=x1.gety();j<x2.gety()+1;j++)
+									map[l][x1.getx()][j].setColor(colorless);
+							}
+							else if(x1.gety()>x2.gety()){
 								for(int j=x2.gety();j<x1.gety()+1;j++)
-								map[l][x1.getx()][j].setColor(colorless);		
+									map[l][x1.getx()][j].setColor(colorless);		
 							}		
 						}
 						else{	
-						if(colormore==-1)
-							color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø 
-						else
-							color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø	
-				 			if(x1.gety()<x2.gety()){
-				 			for(int j=x1.gety();j<x2.gety()+1;j++)
-								map[l][x1.getx()][j].setColor(colormore);
-							}
+							if(colormore==-1){
+								color1+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm[l]+=m[l][i][v].getLENGTH();
+							} 
 							else{
+								color2+=m[l][i][v].getLENGTH();//¥[¸ô½uªø
+								cm2[l]+=m[l][i][v].getLENGTH();
+							}	
+							if(x1.gety()<x2.gety()){
+								for(int j=x1.gety();j<x2.gety()+1;j++)
+									map[l][x1.getx()][j].setColor(colormore);
+							}
+							else if(x1.gety()>x2.gety()){
 								for(int j=x2.gety();j<x1.gety()+1;j++)
-								map[l][x1.getx()][j].setColor(colormore);		
+									map[l][x1.getx()][j].setColor(colormore);		
 							}
 						}
+					}
 				}
-			}
-			isline=true;// there is line 	
+				isline=true;// there is line 	
 			}//end else if !empty
 		} 
-		cout<<"Total length : "<<(color1+color2)/2<<endl;
-		cout<<"color 1 : "<<color1/2<<endl;
-		cout<<"color 2 : "<<color2/2<<endl;
+	}
+	color1=0;
+	color2=0;
+	//cout<<"Total length : "<<(color1+color2)/2<<endl;
+	for(int i=0;i<4;i++){
+		cout<<"layer "<<i+1<<" color 1 : "<< cm[i]/2.0<<", color 2 : "<< cm2[i]/2.0<<endl;
+		color1+=cm[i];
+		color2+=cm2[i];
+	}
+	cout<<"color 1 : "<<color1/2.0<<endl;
+	cout<<"color 2 : "<<color2/2.0<<endl;
+	cout<<"Total length : "<<(color1+color2)/2.0<<endl;
 }
 
 void routing::createblock(vector<node> b){
@@ -1089,6 +1128,94 @@ void routing::Checker(vector< vector<line> > allLines, vector< vector< vector<in
 
 }
 
+bool routing::checkcolor(){
+	int xl=map[0][0].size();
+	int yl=map[0].size();
+	bool conflict=false;
+	int curr;
+	for(int l=0;l<3;l+=2)
+		for(int i=0;i<xl-1;i++){
+			if(m[l][i].empty())
+				conflict=false;
+			else if(!m[l][i].empty()){
+				for(int v=0;v<m[l][i].size();v++){
+					node x1=m[l][i][v].getN1();
+					node x2=m[l][i][v].getN2();
+					if(x1.getx()<x2.getx()){
+						if(map[l][x2.getx()+1][x1.gety()].getColor()==-1||map[l][x2.getx()+1][x1.gety()].getColor()==-2){
+							//cout<<"layer "<<l<<" "<<x2.getx()<<" . "<<x2.gety()<<endl;
+							//return false;
+							}
+						if(map[l][x1.getx()-1][x1.gety()].getColor()==-1||map[l][x1.getx()-1][x1.gety()].getColor()==-2){
+							//cout<<"mm1"<<endl;
+							//return false;
+							}	
+						curr=map[l][x1.getx()][x1.gety()].getColor();	
+						for(int j=x1.getx();j<x2.getx()+1;j++)
+							if(curr==map[l][j][x1.gety()+1].getColor())
+								return false;
+					}
+					else if(x1.getx()>x2.getx()){
+						if(map[l][x2.getx()-1][x1.gety()].getColor()==-1||map[l][x2.getx()-1][x1.gety()].getColor()==-2){
+							//cout<<"mm"<<endl;
+							//return false;
+							}
+						if(map[l][x1.getx()+1][x1.gety()].getColor()==-1||map[l][x1.getx()+1][x1.gety()].getColor()==-2){
+							//cout<<"mm1"<<endl;
+							//return false;
+							}	
+						curr=map[l][x1.getx()][x1.gety()].getColor();	
+						for(int j=x2.getx();j<x1.getx()+1;j++)
+							if(curr==map[l][j][x1.gety()+1].getColor())
+								return false;		
+					}
+				}
+			}
+		}
+	for(int l=1;l<4;l+=2)
+		for(int i=0;i<yl-1;i++){
+			if(m[l][i].empty())
+				conflict=false;
+			else if(!m[l][i].empty()){
+				for(int v=0;v<m[l][i].size();v++){
+					node x1=m[l][i][v].getN1();
+					node x2=m[l][i][v].getN2();
+					if(x1.gety()<x2.gety()){
+						if(map[l][x2.getx()][x2.gety()+1].getColor()==-1||map[l][x2.getx()][x2.gety()+1].getColor()==-2){
+							//cout<<"yy"<<endl;
+							//return false;
+							}
+						if(map[l][x1.getx()][x1.gety()-1].getColor()==-1||map[l][x1.getx()][x1.gety()-1].getColor()==-2){
+							//cout<<"yy1"<<endl;
+							//return false;
+							}	
+						curr=map[l][x1.getx()][x1.gety()].getColor();	
+						for(int j=x1.gety();j<x2.gety()+1;j++)
+							if(curr==map[l][x1.getx()+1][j].getColor())
+								return false;
+					}
+					else if(x1.gety()>x2.gety()){
+						if(map[l][x2.getx()][x1.gety()+1].getColor()==-1||map[l][x2.getx()][x1.gety()+1].getColor()==-2){
+							//cout<<"yy"<<endl;
+							//return false;
+							}
+						if(map[l][x1.getx()][x2.gety()-1].getColor()==-1||map[l][x1.getx()][x2.gety()-1].getColor()==-2){
+							//cout<<"yy1"<<endl;
+							//return false;
+							}		
+						curr=map[l][x1.getx()][x1.gety()].getColor();	
+						for(int j=x2.gety();j<x1.gety()+1;j++)
+							if(curr==map[l][x1.getx()+1][j].getColor())
+								return false;		
+					}
+				}
+			}
+		}			
+
+	return true;				
+
+}
+
 //=============================================
 //main
 
@@ -1151,9 +1278,9 @@ void routing::Checker(vector< vector<line> > allLines, vector< vector< vector<in
 //
 //	// print maps
 //	for(int i = 0; i < 4; i++){
-//		route.prt_Map(i, 0, 0);
 //	}
 //	
+//		route.prt_Map(i, 0, 0);
 //	for(int i=0; i<l.size(); i++) {
 //		node n1 = l[i].getN1();
 //		node n2 = l[i].getN2();

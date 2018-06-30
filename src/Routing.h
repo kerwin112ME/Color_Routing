@@ -122,6 +122,7 @@ public:
 	void MakeSet(line *l);
 	line* FindSet(line *l);
 	void Union(line *l1, line *l2);
+	bool checkcolor();
 
 private:
 	int  checkline(int layer,int posi);//check line color

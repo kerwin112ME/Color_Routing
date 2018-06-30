@@ -240,11 +240,17 @@ int main(int argc, char* argv[])
 		wires.push_back(l);
 	}
 	a.ColorPat();	
+	if(a.checkcolor())
+		cout<<"success!"<<endl;
+	else
+		cout<<"you fucked up"<<endl;
+	double cri=0;
 	for(int i=0;i<crtinet.size();i++){
 		fout<<"Net "<<crtinet[i][0]<<endl;
 		for(int j=0;j<wires[i].size();j++){
 			node x1=wires[i][j].getN1();
 			node x2=wires[i][j].getN2();
+			cri+=wires[i][j].getLENGTH();
 			double xx1=x1.getx();
 			double yy1=x1.gety();
 			double xx2=x2.getx();
@@ -254,7 +260,8 @@ int main(int argc, char* argv[])
 				fout<<" "<<wires[i][j].getLY()+1<<" "<<-a.map[wires[i][j].getLY()][x1.getx()][x1.gety()].getColor()<<endl;
 			}	
 		}
-	}	
+	}
+	cout<<"Critical Net length : "<<cri/2.0<<endl;	
 	for(int i=0;i<normnet.size();i++){
 		fout<<"Net "<<normnet[i][0]<<endl;
 		for(int j=0;j<wires[i+crtinet.size()].size();j++){
