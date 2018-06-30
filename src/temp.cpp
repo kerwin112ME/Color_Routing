@@ -164,4 +164,108 @@ void routing::addSteiner(vector< vector<int> > &netCoor, vector< vector<int> > h
 // 	}
 // }
 
+void routing::MakeSet(line *l) {
+	l->p = l;
+	l->rank = 0;
+}
 
+line* routing::FindSet(line *l) {
+	if(l != l->p) {
+		l->p = FindSet(l->p);
+	}
+	return l->p;
+}
+
+void routing::Union(line *l1, line *l2) {
+	line *x = FindSet(l1);
+	line *y = FindSet(l2);
+
+	if(x->rank > y->rank) {
+		y->p = x;
+	}
+	else {
+		x->p = y;
+		if(x->rank == y->rank) 
+			y->rank ++;
+	}
+}
+
+void routing::Checker(vector< vector<line> > allLines, vector< vector< vector<int> > > netPins, vector<node> blockage) {
+	// color 
+	// 0:white, 1:completed net, 2:running net, 3:pins, 4:blockage
+	int colorMap[4][map[0].size()][map[0][0].size()];
+	vector< vector<int> > walkThrough;
+	int error = 0;
+	int setNumber;
+	// for(int i=0; i<4; i++) {
+	// 	colorMap[i].resize(map[0].size());
+	// 	for(int j=0; j<map[0].size(); j++) 
+	// 		colorMap[i][j].resize(map[0][0].size());
+	// }
+
+	// color the pins
+	for(int i=0; i<netPins.size(); i++) {
+		//colorMap[netPins[i][0]][netPins[i][1]][netPins[i][2]] = 3;
+		colorMap[0][0][0] = 3;
+	}
+
+	// color the blockages
+	for(int i=0; i<blockage.size(); i+=2) {
+		int leftDown[2] = {blockage[i].getx() , blockage[i].gety()};
+		int rightTop[2] = {blockage[i+1].getx() , blockage[i+1].gety()};
+		for(int j=leftDown[0]; j<=rightTop[0]; j++) {
+			for(int k=leftDown[1]; k<=rightTop[1]; k++) {
+				for(int l=0; l<4; l++) 
+					colorMap[l][j][k] = 4;
+			}
+		}
+	}
+
+	for(int net=1; net<allLines.size(); net++) {
+		for(int i=0; i<allLines[net].size(); i++)
+			MakeSet(&allLines[net][i]);
+		walkThrough.clear();
+		setNumber = allLines[net].size();
+		for(int i=0; i<netPins[net].size(); i++) {
+			colorMap[netPins[net][i][0]][netPins[net][i][1]][netPins[net][i][2]] = 0;
+		}
+		for(int i=0; i<allLines[net].size(); i++) {
+			vector<int> start = (allLines[net][i].getN1()).getIndex();
+			vector<int> end = (allLines[net][i].getN2()).getIndex();
+
+			// check the line color
+			if(start[1] != end[1]) { // horizontal
+				for(int x=start[1]; x<=end[1]; x++) {
+					if(colorMap[start[0]][x][start[2]] != 0 && colorMap[start[0]][x][start[2]] != 2) {
+						cout << "color error" << endl;
+						error ++;
+					}
+					colorMap[start[0]][x][start[2]] = 1;
+				}
+			}
+			else {
+				for(int y=start[2]; y<=end[2]; y++) {
+					if(colorMap[start[0]][start[1]][y] != 0 && colorMap[start[0]][start[1]][y] != 2)
+						cout << "color error" << endl;
+					colorMap[start[0]][x][start[2]] = 1;
+					error ++;
+				}
+			}
+
+		}
+
+		// check the pins connecting
+		for(int i=0; i<netPins[net].size(); i++) {
+			if(colorMap[netPins[net][i][0]][netPins[net][i][1]][netPins[net][i][2]] != 1) {
+				cout << "net" << net << " pin" << i+1 << " failed !" << endl;
+				error ++;
+			}
+		}
+
+	}
+
+	if(error == 0)
+		cout << "excellent bro !" << endl;
+
+
+}

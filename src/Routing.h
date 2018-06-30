@@ -97,6 +97,8 @@ public:
 	int getLC(); // get line color
 	void setLY(int ly); // set line layer
 	int getLY(); // get line layer
+	line *p; // parent of disjoint set
+	int rank;
 };
 
 class routing {
@@ -116,6 +118,11 @@ public:
 	vector< vector<int> > HananGrid(vector< vector<int> > netCoor);
 	void addSteiner(vector< vector<int> > &netCoor, vector< vector<int> > hananGrid);
 	int viaTotal;
+	void Checker(vector< vector<line> > allLines, vector< vector< vector<int> > > netPins, vector<node> blockage);
+	void MakeSet(line *l);
+	line* FindSet(line *l);
+	void Union(line *l1, line *l2);
+
 private:
 	int  checkline(int layer,int posi);//check line color
 };

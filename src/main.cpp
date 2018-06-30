@@ -171,6 +171,12 @@ int main(int argc, char* argv[])
  
 	vector< vector<int> > netCoor;
 	vector< vector<line> > wires;
+	vector< vector< vector<int> > > netPins;
+	vector< vector<line> > allLines;
+	netPins.clear();
+	netPins.resize(crtinet.size() + normnet.size() + 1);
+	allLines.clear();
+	allLines.resize(crtinet.size() + normnet.size() + 1);
 	wires.clear();
 
 	a.netOrdering(crtinet, pinnew);
@@ -182,19 +188,21 @@ int main(int argc, char* argv[])
 			netCoor.push_back(pinnew[crtinet[i][j]].getIndex());
 		for(int k=0; k<netCoor.size(); k++) 
 			cout << netCoor[k][0] << " " << netCoor[k][1] << " " << netCoor[k][2] << endl;
+		netPins[crtinet[i][0]] = netCoor;
 
 		vector<line> l;
-		if(netCoor.size() == 2) {
-			l = a.Hadlock(a.map[netCoor[0][0]][netCoor[0][1]][netCoor[0][2]], a.map[netCoor[1][0]][netCoor[1][1]][netCoor[1][2]], false);
-		}
-		else {
-			vector< vector<int> > hananGrid = a.HananGrid(netCoor);
-			cout << "originCost = " << a.MSTCost(netCoor) << endl;
-			a.addSteiner(netCoor, hananGrid);
-			cout << "SteinerCost = " << a.MSTCost(netCoor) << endl;
-			l = a.MST(netCoor);
-		}
-		//l = a.MST(netCoor);
+		// if(netCoor.size() == 2) {
+		// 	l = a.Hadlock(a.map[netCoor[0][0]][netCoor[0][1]][netCoor[0][2]], a.map[netCoor[1][0]][netCoor[1][1]][netCoor[1][2]], false);
+		// }
+		// else {
+		// 	vector< vector<int> > hananGrid = a.HananGrid(netCoor);
+		// 	cout << "originCost = " << a.MSTCost(netCoor) << endl;
+		// 	a.addSteiner(netCoor, hananGrid);
+		// 	cout << "SteinerCost = " << a.MSTCost(netCoor) << endl;
+		// 	l = a.MST(netCoor);
+		// }
+		l = a.MST(netCoor);
+		allLines[crtinet[i][0]] = l;
 		a.classifyline(l);
 		wires.push_back(l);
 	}
@@ -213,19 +221,21 @@ int main(int argc, char* argv[])
 			netCoor.push_back(pinnew[normnet[i][j]].getIndex());
 		for(int k=0; k<netCoor.size(); k++) 
 			cout << netCoor[k][0] << " " << netCoor[k][1] << " " << netCoor[k][2] << endl;
+		netPins[normnet[i][0]] = netCoor;
 
 		vector<line> l;
-		if(netCoor.size() == 2) {
-			l = a.Hadlock(a.map[netCoor[0][0]][netCoor[0][1]][netCoor[0][2]], a.map[netCoor[1][0]][netCoor[1][1]][netCoor[1][2]], false);
-		}
-		else {
-			vector< vector<int> > hananGrid = a.HananGrid(netCoor);
-			cout << "originCost = " << a.MSTCost(netCoor) << endl;
-			a.addSteiner(netCoor, hananGrid);
-			cout << "SteinerCost = " << a.MSTCost(netCoor) << endl;
-			l = a.MST(netCoor);
-		}
-		//l = a.MST(netCoor);
+		// if(netCoor.size() == 2) {
+		// 	l = a.Hadlock(a.map[netCoor[0][0]][netCoor[0][1]][netCoor[0][2]], a.map[netCoor[1][0]][netCoor[1][1]][netCoor[1][2]], false);
+		// }
+		// else {
+		// 	vector< vector<int> > hananGrid = a.HananGrid(netCoor);
+		// 	cout << "originCost = " << a.MSTCost(netCoor) << endl;
+		// 	a.addSteiner(netCoor, hananGrid);
+		// 	cout << "SteinerCost = " << a.MSTCost(netCoor) << endl;
+		// 	l = a.MST(netCoor);
+		// }
+		l = a.MST(netCoor);
+		allLines[normnet[i][0]] = l;
 		a.classifyline(l);
 		wires.push_back(l);
 	}
@@ -260,9 +270,14 @@ int main(int argc, char* argv[])
 		}
 	}			
 
-	tmusg.getPeriodUsage(stat);
-
 	cout << "Total via = " << a.viaTotal << endl;
+	cout << "//////////////////////////////// Checker ////////////////////////////////" << endl;
+	cout << endl;
+	a.Checker(allLines, netPins, block);
+	cout << endl;
+	cout << "/////////////////////////////////////////////////////////////////////////" << endl;
+
+	tmusg.getPeriodUsage(stat);
 
 	cout <<"# run time = " << (stat.uTime + stat.sTime) / 1000000.0 << "sec" << endl;
 	cout <<"# memory =" << stat.vmPeak / 1000.0 << "MB" << endl;
